@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/MethDamon/ConCruise-Frontend.svg?branch=master)](https://travis-ci.org/MethDamon/ConCruise-Frontend)
+
 # ConCruise Frontend
 
 ## Instructions
