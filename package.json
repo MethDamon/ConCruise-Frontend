@@ -15,6 +15,7 @@
     "css-loader": "0.28.9",
     "extract-text-webpack-plugin": "3.0.2",
     "file-loader": "1.1.6",
+    "gh-pages": "^1.1.0",
     "html-loader": "0.5.5",
     "html-webpack-plugin": "2.30.1",
     "node-sass": "4.7.2",
@@ -45,7 +46,8 @@
     "dev": "webpack -d --progress --watch --profile --json > compilation-stats.json --env.dev",
     "start": "webpack-dev-server --progress --color --inline --env.dev",
     "build": "webpack -p --progress --env.prod",
-    "clean": "rimraf ./build"
+    "clean": "rimraf ./build",
+    "deploy": "npm run build&&gh-pages -d build"
   },
   "engines": {
     "node": ">= 8.9.4",
