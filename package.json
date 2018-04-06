@@ -1,9 +1,8 @@
 {
   "name": "ConCruise",
-  "version": "0.1",
-  "author": "Łukasz Holeczek",
+  "version": "0.0.1",
+  "author": "Tim Strasser",
   "homepage": "https://methdamon.github.io/ConCruise-Frontend/",
-  "copyright": "Copyright 2018 creativeLabs Łukasz Holeczek",
   "devDependencies": {
     "babel-core": "6.26.0",
     "babel-loader": "7.1.2",
@@ -47,7 +46,8 @@
     "start": "webpack-dev-server --progress --color --inline --env.dev",
     "build": "webpack -p --progress --env.prod",
     "clean": "rimraf ./build",
-    "deploy": "npm run build&&gh-pages -d build"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "engines": {
     "node": ">= 8.9.4",
