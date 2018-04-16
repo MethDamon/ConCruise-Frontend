@@ -6,11 +6,11 @@
     'use strict'
 
     function cryptoContext() {
-      this.nullBytes30Base64 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"; // use non-multiple of block size on purpose to test padding
-      this.symmetricKey32BytesBase64 = "cHkBm+G9HfIvxM96cHnsKMHHx9FvEBLHDfu2f3Rj62s=";
-      this.fixedIVBase64 = "02Pk9zBdju1PBZqSN+/+Eg=="; // REMOVE FOR PRODUCTION
+      var nullBytes30Base64 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"; // use non-multiple of block size on purpose to test padding
+      var symmetricKey32BytesBase64 = "cHkBm+G9HfIvxM96cHnsKMHHx9FvEBLHDfu2f3Rj62s=";
+      var fixedIVBase64 = "02Pk9zBdju1PBZqSN+/+Eg=="; // REMOVE FOR PRODUCTION
 
-      this.decodeBase64 = function (base64) {
+      var decodeBase64 = function (base64) {
         var binary_string =  window.atob(base64);
         var len = binary_string.length;
         var bytes = new Uint8Array( len );
@@ -20,25 +20,19 @@
         return bytes.buffer;
       }
 
-      this.nullBytes30 = this.decodeBase64(this.nullBytes30Base64);
-      this.fixedIV = this.decodeBase64(this.fixedIVBase64);
+      var nullBytes30 = decodeBase64(nullBytes30Base64);
+      var fixedIV = decodeBase64(fixedIVBase64);
 
-      this.decodeKey = function(input, onSuccess, onError) {
-        window.crypto.subtle.importKey(
+      var decodeKey = function(input) {
+        return window.crypto.subtle.importKey(
             "raw", //can be "jwk" or "raw"
-            this.decodeBase64(input),
+            decodeBase64(input),
             {   //this is the algorithm options
                 name: "AES-CBC",
             },
             false, //whether the key is extractable (i.e. can be used in exportKey)
             ["encrypt", "decrypt"] //can be "encrypt", "decrypt", "wrapKey", or "unwrapKey"
-        )
-        .then(function(key) {
-            onSuccess(key);
-        })
-        .catch(function(err) {
-            onError(err);
-        });
+        );
       }
 
       var buf2hex = function(buffer) { // buffer is an ArrayBuffer
@@ -48,15 +42,15 @@
       this.encryptAES = function(onSuccess, onError) {
         var result = {};
         //result.iv = window.crypto.getRandomValues(new Uint8Array(16));
-        result.iv = this.fixedIV;
+        result.iv = fixedIV;
         /*result.ivHex = result.iv.reduce(function(memo, i) {
             return memo + ('0' + i.toString(16)).slice(-2); //padd with leading 0 if <16
           }, '');*/
         result.ivHex = buf2hex(result.iv);
-        var parent = this;
 
-        this.decodeKey(this.symmetricKey32BytesBase64, function(decodedKey) {
-          window.crypto.subtle.encrypt(
+        decodeKey(symmetricKey32BytesBase64)
+        .then(function(decodedKey) {
+          return window.crypto.subtle.encrypt(
               {
                   name: "AES-CBC",
                   //Don't re-use initialization vectors!
@@ -64,26 +58,23 @@
                   iv: result.iv,
               },
               decodedKey, //from generateKey or importKey above
-              parent.nullBytes30 //ArrayBuffer of data you want to encrypt
-          )
-          .then(function(encrypted) { 
-              //returns an ArrayBuffer containing the encrypted data
-              result.encrypted = buf2hex(encrypted);
-              onSuccess(result);
-          })
-          .catch(function(err) {
-              onError("encryption error: " + err);
-          });
-        }, function(err) {
-          onError("key decode error: " + err);
+              nullBytes30 //ArrayBuffer of data you want to encrypt
+          );
+        })
+        .then(function(encrypted) { 
+          //returns an ArrayBuffer containing the encrypted data
+          result.encrypted = buf2hex(encrypted);
+          onSuccess(result);
+        })
+        .catch(function(err) {
+          onError(err);
         });
       }
 
       this.decryptAES = function(data, iv, onSuccess, onError) {
-        var parent = this;
-
-        this.decodeKey(this.symmetricKey32BytesBase64, function(decodedKey) {
-          window.crypto.subtle.decrypt(
+        decodeKey(symmetricKey32BytesBase64)
+        .then(function(decodedKey) {
+          return window.crypto.subtle.decrypt(
               {
                   name: "AES-CBC",
                   //Don't re-use initialization vectors!
@@ -92,21 +83,19 @@
               },
               decodedKey, //from generateKey or importKey above
               data //ArrayBuffer of data you want to encrypt
-          )
-          .then(function(decrypted) { 
-              //returns an ArrayBuffer containing the encrypted data
-              onSuccess(buf2hex(decrypted));
-          })
-          .catch(function(err) {
-              onError("decryption error: " + err);
-          });
-        }, function(err) {
-          onError("key decode error: " + err);
+          );
+        })
+        .then(function(decrypted) { 
+            //returns an ArrayBuffer containing the encrypted data
+            onSuccess(buf2hex(decrypted));
+        })
+        .catch(function(err) {
+          onError(err);
         });
       }
 
       this.hashSHA256 = function(onSuccess) {
-        crypto.subtle.digest("SHA-256", this.nullBytes30).then(function (hash) {
+        crypto.subtle.digest("SHA-256", nullBytes30).then(function (hash) {
             onSuccess(buf2hex(hash));
           });
       }
@@ -124,135 +113,121 @@
         var theirDerivedKeyExtracted;
 
         window.crypto.subtle.generateKey(
+          {
+              name: "ECDH",
+              namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
+          },
+          true, //whether the key is extractable (i.e. can be used in exportKey)
+          ["deriveKey", "deriveBits"] //can be any combination of "deriveKey" and "deriveBits"
+        )
+        .then(function(key) {
+          ourKeypair = key;
+
+          return window.crypto.subtle.generateKey(
             {
                 name: "ECDH",
                 namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
             },
             true, //whether the key is extractable (i.e. can be used in exportKey)
             ["deriveKey", "deriveBits"] //can be any combination of "deriveKey" and "deriveBits"
-        )
-        .then(function(key){
-            ourKeypair = key;
-
-            window.crypto.subtle.generateKey(
-                {
-                    name: "ECDH",
-                    namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
-                },
-                true, //whether the key is extractable (i.e. can be used in exportKey)
-                ["deriveKey", "deriveBits"] //can be any combination of "deriveKey" and "deriveBits"
-            )
-            .then(function(key){
-                theirKeypair = key;
-
-                window.crypto.subtle.deriveKey(
-                    {
-                        name: "ECDH",
-                        namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
-                        public: theirKeypair.publicKey, //an ECDH public key from generateKey or importKey
-                    },
-                    ourKeypair.privateKey, //your ECDH private key from generateKey or importKey
-                    { //the key type you want to create based on the derived bits
-                        name: "AES-CBC", //can be any AES algorithm ("AES-CTR", "AES-CBC", "AES-CMAC", "AES-GCM", "AES-CFB", "AES-KW", "ECDH", "DH", or "HMAC")
-                        //the generateKey parameters for that type of algorithm
-                        length: 256, //can be  128, 192, or 256
-                    },
-                    true, //whether the derived key is extractable (i.e. can be used in exportKey)
-                    ["encrypt", "decrypt"] //limited to the options in that algorithm's importKey
-                )
-                .then(function(keydata){
-                  ourDerivedKey = keydata;
-
-                  window.crypto.subtle.deriveKey(
-                      {
-                          name: "ECDH",
-                          namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
-                          public: ourKeypair.publicKey, //an ECDH public key from generateKey or importKey
-                      },
-                      theirKeypair.privateKey, //your ECDH private key from generateKey or importKey
-                      { //the key type you want to create based on the derived bits
-                          name: "AES-CBC", //can be any AES algorithm ("AES-CTR", "AES-CBC", "AES-CMAC", "AES-GCM", "AES-CFB", "AES-KW", "ECDH", "DH", or "HMAC")
-                          //the generateKey parameters for that type of algorithm
-                          length: 256, //can be  128, 192, or 256
-                      },
-                      true, //whether the derived key is extractable (i.e. can be used in exportKey)
-                      ["encrypt", "decrypt"] //limited to the options in that algorithm's importKey
-                  )
-                  .then(function(keydata){
-                    theirDerivedKey = keydata;
-
-                    window.crypto.subtle.deriveKey(
-                        {
-                            name: "ECDH",
-                            namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
-                            public: theirKeypair.publicKey, //an ECDH public key from generateKey or importKey
-                        },
-                        ourKeypair.privateKey, //your ECDH private key from generateKey or importKey
-                        { //the key type you want to create based on the derived bits
-                            name: "AES-CBC", //can be any AES algorithm ("AES-CTR", "AES-CBC", "AES-CMAC", "AES-GCM", "AES-CFB", "AES-KW", "ECDH", "DH", or "HMAC")
-                            //the generateKey parameters for that type of algorithm
-                            length: 256, //can be  128, 192, or 256
-                        },
-                        true, //whether the derived key is extractable (i.e. can be used in exportKey)
-                        ["encrypt", "decrypt"] //limited to the options in that algorithm's importKey
-                    )
-                    .then(function(keydata){
-                      crypto.subtle.exportKey("raw", ourKeypair.publicKey).then(function(keydata) {
-                          ourPublicKeyExtracted = keydata;
-                          crypto.subtle.exportKey("jwk", ourKeypair.privateKey).then(function(keydata) {
-                              ourPrivateKeyExtracted = keydata;
-                              crypto.subtle.exportKey("raw", theirKeypair.publicKey).then(function(keydata) {
-                                  theirPublicKeyExtracted = keydata;
-                                  crypto.subtle.exportKey("jwk", theirKeypair.privateKey).then(function(keydata) {
-                                      theirPrivateKeyExtracted = keydata;
-                                      crypto.subtle.exportKey("raw", ourDerivedKey).then(function(keydata) {
-                                          ourDerivedKeyExtracted = keydata;
-                                          crypto.subtle.exportKey("raw", theirDerivedKey).then(function(keydata) {
-                                              theirDerivedKeyExtracted = keydata;
-                                              onSuccess(buf2hex(ourPublicKeyExtracted), 
-                                                  ourPrivateKeyExtracted.x + "---|---" + ourPrivateKeyExtracted.y + "---|---" + ourPrivateKeyExtracted.d, 
-                                                  buf2hex(theirPublicKeyExtracted), 
-                                                  theirPrivateKeyExtracted.x + "---|---" + theirPrivateKeyExtracted.y + "---|---" + theirPrivateKeyExtracted.d, 
-                                                  buf2hex(ourDerivedKeyExtracted), 
-                                                  buf2hex(theirDerivedKeyExtracted));
-                                            }).catch(function(err) {
-                                              onError(err);
-                                            });
-                                        }).catch(function(err) {
-                                          onError(err);
-                                        });
-                                    }).catch(function(err) {
-                                      onError(err);
-                                    });
-                                }).catch(function(err) {
-                                  onError(err);
-                                });
-                            }).catch(function(err) {
-                              onError(err);
-                            });
-                        }).catch(function(err) {
-                          onError(err);
-                        });
-                    })
-                    .catch(function(err){
-                      onError(err);
-                    });
-                  })
-                  .catch(function(err){
-                    onError(err);
-                  });
-                })
-                .catch(function(err){
-                  onError(err);
-                });
-            })
-            .catch(function(err){
-              onError(err);
-            });
+          );
         })
-        .catch(function(err){
+        .then(function(key) {
+          theirKeypair = key;
+
+          return window.crypto.subtle.deriveKey(
+            {
+                name: "ECDH",
+                namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
+                public: theirKeypair.publicKey, //an ECDH public key from generateKey or importKey
+            },
+            ourKeypair.privateKey, //your ECDH private key from generateKey or importKey
+            { //the key type you want to create based on the derived bits
+                name: "AES-CBC", //can be any AES algorithm ("AES-CTR", "AES-CBC", "AES-CMAC", "AES-GCM", "AES-CFB", "AES-KW", "ECDH", "DH", or "HMAC")
+                //the generateKey parameters for that type of algorithm
+                length: 256, //can be  128, 192, or 256
+            },
+            true, //whether the derived key is extractable (i.e. can be used in exportKey)
+            ["encrypt", "decrypt"] //limited to the options in that algorithm's importKey
+          );
+        })
+        .then(function(keydata) {
+          ourDerivedKey = keydata;
+
+          return window.crypto.subtle.deriveKey(
+            {
+                name: "ECDH",
+                namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
+                public: ourKeypair.publicKey, //an ECDH public key from generateKey or importKey
+            },
+            theirKeypair.privateKey, //your ECDH private key from generateKey or importKey
+            { //the key type you want to create based on the derived bits
+                name: "AES-CBC", //can be any AES algorithm ("AES-CTR", "AES-CBC", "AES-CMAC", "AES-GCM", "AES-CFB", "AES-KW", "ECDH", "DH", or "HMAC")
+                //the generateKey parameters for that type of algorithm
+                length: 256, //can be  128, 192, or 256
+            },
+            true, //whether the derived key is extractable (i.e. can be used in exportKey)
+            ["encrypt", "decrypt"] //limited to the options in that algorithm's importKey
+          );
+        })
+        .then(function(keydata) {
+          theirDerivedKey = keydata;
+
+          return window.crypto.subtle.deriveKey(
+            {
+                name: "ECDH",
+                namedCurve: "P-256", //can be "P-256", "P-384", or "P-521"
+                public: theirKeypair.publicKey, //an ECDH public key from generateKey or importKey
+            },
+            ourKeypair.privateKey, //your ECDH private key from generateKey or importKey
+            { //the key type you want to create based on the derived bits
+                name: "AES-CBC", //can be any AES algorithm ("AES-CTR", "AES-CBC", "AES-CMAC", "AES-GCM", "AES-CFB", "AES-KW", "ECDH", "DH", or "HMAC")
+                //the generateKey parameters for that type of algorithm
+                length: 256, //can be  128, 192, or 256
+            },
+            true, //whether the derived key is extractable (i.e. can be used in exportKey)
+            ["encrypt", "decrypt"] //limited to the options in that algorithm's importKey
+          );
+        })
+        .then(function(keydata) {
+          return crypto.subtle.exportKey("raw", ourKeypair.publicKey);
+        })
+        .then(function(keydata) {
+          ourPublicKeyExtracted = keydata;
+          return crypto.subtle.exportKey("jwk", ourKeypair.privateKey);
+        })
+        .then(function(keydata) {
+          ourPrivateKeyExtracted = keydata;
+          return crypto.subtle.exportKey("raw", theirKeypair.publicKey);
+        })
+        .then(function(keydata) {
+          theirPublicKeyExtracted = keydata;
+          return crypto.subtle.exportKey("jwk", theirKeypair.privateKey);
+        })
+        .then(function(keydata) {
+          theirPrivateKeyExtracted = keydata;
+          return crypto.subtle.exportKey("raw", ourDerivedKey);
+        })
+        .then(function(keydata) {
+          ourDerivedKeyExtracted = keydata;
+          return crypto.subtle.exportKey("raw", theirDerivedKey);
+        })
+        .then(function(keydata) {
+          theirDerivedKeyExtracted = keydata;
+          onSuccess(buf2hex(ourPublicKeyExtracted), 
+            ourPrivateKeyExtracted.x + "---|---" + ourPrivateKeyExtracted.y + "---|---" + ourPrivateKeyExtracted.d, 
+            buf2hex(theirPublicKeyExtracted), 
+            theirPrivateKeyExtracted.x + "---|---" + theirPrivateKeyExtracted.y + "---|---" + theirPrivateKeyExtracted.d, 
+            buf2hex(ourDerivedKeyExtracted), 
+            buf2hex(theirDerivedKeyExtracted));
+        })
+        .catch(function(err) {
           onError(err);
         });
+      }
+
+      this.decryptAndVerifyIncomingMessage = function(msg) {
+
       }
     }
 
@@ -310,7 +285,8 @@
 
                         parent.printl("<br/>our and their derived key should be the same.");
                         parent.printl("for each session both (or at least one) party should generate a new ecdh keypair (and sign it with their ECDSA keypair " +
-                          "for authentication) ephemeral keys");
+                          "for authentication) (for forwared secrecy: ephemeral keys)");
+                        parent.printl("after key exchange the parties can use the derived shared secret as a symmetric key for subsequent encrypted, authenticated communication");
                       }, function(err) {
                         parent.printl(err);
                       });
