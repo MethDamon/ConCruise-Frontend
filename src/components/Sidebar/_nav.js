@@ -3,11 +3,12 @@ export default {
     {
       name: 'Dashboard',
       url: '/dashboard',
-      icon: 'icon-speedometer',
-      badge: {
-        variant: 'info',
-        text: 'NEW'
-      }
+      icon: 'icon-speedometer'
+    },
+    {
+      name: 'Upload Files',
+      url: '/fileupload',
+      icon: 'fa fa-cloud-upload'
     }
   ]
 };
