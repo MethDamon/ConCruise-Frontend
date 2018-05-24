@@ -1,14 +1,14 @@
 export default {
   items: [
     {
-      name: 'Dashboard',
-      url: '/dashboard',
-      icon: 'icon-speedometer'
+      name: 'Overview',
+      url: '/overview',
+      icon: 'icon-home'
     },
     {
-      name: 'Upload Files',
-      url: '/fileupload',
-      icon: 'fa fa-cloud-upload'
+      name: 'Login',
+      url: '/login',
+      icon: ''
     }
   ]
 };

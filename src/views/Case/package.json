@@ -1,0 +1,6 @@
+{
+  "name": "Case",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./Case.js"
+}

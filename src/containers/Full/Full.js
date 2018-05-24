@@ -7,10 +7,39 @@ import Breadcrumb from '../../components/Breadcrumb/';
 import Aside from '../../components/Aside/';
 import Footer from '../../components/Footer/';
 
-import Dashboard from '../../views/Dashboard/';
+import Login from '../../views/Login/';
+import Overview from '../../views/Overview/';
+import Case from '../../views/Case/';
+
+import Authentication from '../../containers/Authentication/';
 
 class Full extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      isAuthenticated: false,
+    };
+  }
+
+  authenticate() {
+      this.setState({
+        isAuthenticated: true,
+      })
+    }
+
+  signout() {
+      this.setState({
+        isAuthenticated: false,
+      })
+    }
+
   render() {
+    const PrivateRoute = ({ component: Component, ...rest }) => (
+      <Route {...rest} render={(props) => (
+        this.state.isAuthenticated === true ? <Component {...props} /> : <Redirect to='/login' />
+      )} />
+    )
     return (
       <div className="app">
         <Header />
@@ -20,14 +49,16 @@ class Full extends Component {
             <Breadcrumb />
             <Container fluid>
               <Switch>
-                <Route path="/dashboard" name="Dashboard" component={Dashboard}/>
-                <Redirect from="/" to="/dashboard"/>
+                <PrivateRoute path="/case/:caseNumber" name="Case" component={Case}/>
+                <Route path="/login" name="Login" render={(props) => <Login isAuthenticated={this.state.isAuthenticated} authenticate={this.authenticate.bind(this)} signout={this.signout.bind(this)} {...props} />}/>
+                <PrivateRoute path="/overview" name="Overview" component={Overview}/>
+                <Redirect from="/" to="/overview"/>
               </Switch>
             </Container>
           </main>
-          <Aside />
+          {/*<Aside />*/}
         </div>
-        <Footer />
+        {/*<Footer />*/}
       </div>
     );
   }
