@@ -265,7 +265,7 @@ var concruise;
             this.printl("loaded page");
         }
         Context.prototype.printl = function (str) {
-            output.innerHTML += str + "<br/>";
+            output.innerHTML += str + "<br/><br/>";
         };
         Context.prototype.login = function () {
             return this.serverCtx.login();
