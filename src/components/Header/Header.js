@@ -34,7 +34,7 @@ class Header extends Component {
         <NavbarToggler className="d-lg-none" onClick={this.mobileSidebarToggle}>
           <span className="navbar-toggler-icon"></span>
         </NavbarToggler>
-        <h4 style={{padding: '0.25rem', marginBottom: '0', marginLeft: '40px', marginRight: '15px'}}>ConCruise</h4>
+        <NavbarBrand href="#"></NavbarBrand>
         <NavbarToggler className="d-md-down-none mr-auto" onClick={this.sidebarToggle}>
           <span className="navbar-toggler-icon"></span>
         </NavbarToggler>

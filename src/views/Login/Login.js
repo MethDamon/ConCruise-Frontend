@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
+import { SSL_OP_EPHEMERAL_RSA } from 'constants';
 
 class Login extends Component {
 
@@ -8,7 +9,7 @@ class Login extends Component {
     history.push('/');
   }
 
-  logout(history) {
+  logout(history) {    
     this.props.signout();
     history.push('/');
   }
@@ -20,7 +21,7 @@ class Login extends Component {
         type="button"
         className="btn btn-primary"
         style={{marginRight: '20px'}}
-        onClick={() => { this.login(history) }}
+        onClick={() => { setTimeout(() => this.login(history), 500 )}}
       >
         Login
       </button>
@@ -51,7 +52,7 @@ class Login extends Component {
                       <label htmlFor="email">Email</label>
                     </div>
                     <div className="col-12 col-md-9">
-                      <input type="text" id="text-input" name="email" className="form-control" placeholder="max.muster@gmail.com" />
+                      <input type="email" id="text-input" name="email" className="form-control" placeholder="max.muster@gmail.com" />
                       <small className="help-block form-text text-muted">Please enter your email</small>
                     </div>
                   </div>
@@ -60,7 +61,7 @@ class Login extends Component {
                       <label htmlFor="password">Password</label>
                     </div>
                     <div className="col-12 col-md-9">
-                      <input type="text" id="text-input" name="password" className="form-control" placeholder="hunter2" />
+                      <input type="password" id="text-input" name="password" className="form-control" placeholder="hunter2" />
                       <small className="help-block form-text text-muted">Please enter your password</small>
                     </div>
                   </div>
