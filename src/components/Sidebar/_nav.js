@@ -9,6 +9,11 @@ export default {
       name: 'Login',
       url: '/login',
       icon: ''
+    },
+    {
+      name: 'Encryption',
+      url: '/encryption',
+      icon: ''
     }
   ]
 };

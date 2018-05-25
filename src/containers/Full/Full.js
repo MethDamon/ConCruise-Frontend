@@ -10,6 +10,7 @@ import Footer from '../../components/Footer/';
 import Login from '../../views/Login/';
 import Overview from '../../views/Overview/';
 import Case from '../../views/Case/';
+import Encryption from '../../views/Encryption'
 
 import Authentication from '../../containers/Authentication/';
 
@@ -52,6 +53,7 @@ class Full extends Component {
                 <PrivateRoute path="/case/:caseId" name="Case" component={Case}/>
                 <Route path="/login" name="Login" render={(props) => <Login isAuthenticated={this.state.isAuthenticated} authenticate={this.authenticate.bind(this)} signout={this.signout.bind(this)} {...props} />}/>
                 <PrivateRoute path="/overview" name="Overview" component={Overview}/>
+                <PrivateRoute path="/encryption" name="Encryption" component={Encryption}/>
                 <Redirect from="/" to="/overview"/>
               </Switch>
             </Container>
