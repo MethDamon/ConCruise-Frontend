@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {withRouter} from 'react-router-dom';
+import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 
 class Login extends Component {
 
@@ -15,31 +15,64 @@ class Login extends Component {
 
   render() {
 
-    const LoginButton = withRouter(({history}) => (
+    const LoginButton = withRouter(({ history }) => (
       <button
         type="button"
-        className="btn btn-block btn-primary"
-        onClick={() => {this.login(history)}}
+        className="btn btn-primary"
+        style={{marginRight: '20px'}}
+        onClick={() => { this.login(history) }}
       >
-      Login
+        Login
       </button>
     ))
 
-    const LogoutButton = withRouter(({history}) => (
+    const LogoutButton = withRouter(({ history }) => (
       <button
         type="button"
-        className="btn btn-block btn-primary"
-        onClick={() => {this.logout(history)}}
+        className="btn btn-secondary"
+        onClick={() => { this.logout(history) }}
       >
-      Logout
+        Logout
       </button>
     ))
 
     return (
       <div className="animated fadeIn">
-        <div><input type="text" id="text-input" name="text-input" className="form-control" placeholder="Text"/></div>
-        <div><input type="password" id="password-input" name="password-input" className="form-control" placeholder="Password"/></div>
-        <div><LoginButton/><LogoutButton/></div>
+        <div className="row">
+          <div className="col-md-6 mx-auto">
+            <div className="card">
+              <div className="card-header">
+                <strong>Please login</strong>
+              </div>
+              <div className="card-body">
+                <form className="form-horizontal">
+                  <div className="row form-group">
+                    <div className="col-md-3">
+                      <label htmlFor="email">Email</label>
+                    </div>
+                    <div className="col-12 col-md-9">
+                      <input type="text" id="text-input" name="email" className="form-control" placeholder="max.muster@gmail.com" />
+                      <small className="help-block form-text text-muted">Please enter your email</small>
+                    </div>
+                  </div>
+                  <div className="row form-group">
+                    <div className="col-md-3">
+                      <label htmlFor="password">Password</label>
+                    </div>
+                    <div className="col-12 col-md-9">
+                      <input type="text" id="text-input" name="password" className="form-control" placeholder="hunter2" />
+                      <small className="help-block form-text text-muted">Please enter your password</small>
+                    </div>
+                  </div>
+                  <div className="form-actions">
+                    <LoginButton style="margin-right: 20px;" />
+                    <LogoutButton />
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

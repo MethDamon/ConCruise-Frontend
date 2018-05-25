@@ -49,7 +49,7 @@ class Full extends Component {
             <Breadcrumb />
             <Container fluid>
               <Switch>
-                <PrivateRoute path="/case/:caseNumber" name="Case" component={Case}/>
+                <PrivateRoute path="/case/:caseId" name="Case" component={Case}/>
                 <Route path="/login" name="Login" render={(props) => <Login isAuthenticated={this.state.isAuthenticated} authenticate={this.authenticate.bind(this)} signout={this.signout.bind(this)} {...props} />}/>
                 <PrivateRoute path="/overview" name="Overview" component={Overview}/>
                 <Redirect from="/" to="/overview"/>
