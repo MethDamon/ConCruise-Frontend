@@ -11,6 +11,7 @@ import FilePondImagePreview from 'filepond-plugin-image-preview';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 registerPlugin(FilePondImagePreview);
 
+
 class Case extends Component {
   constructor(props) {
     super(props);
@@ -57,7 +58,7 @@ class Case extends Component {
           {this.someContent()}
         </div>
         <div>
-          <FilePond allowMultiple={true} maxFiles={3}>
+          <FilePond allowMultiple={true} maxFiles={3} server="http://web2-service-1.d1bb7b39.cont.dockerapp.io:32783/upload">
 
             {/* Set current files using the <File/> component */}
             {this.state.files.map(file => (
