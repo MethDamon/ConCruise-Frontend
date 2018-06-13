@@ -5,8 +5,10 @@ import { SSL_OP_EPHEMERAL_RSA } from 'constants';
 class Login extends Component {
 
   login(history) {
-    this.props.authenticate();
-    history.push('/');
+    setTimeout(new function () {
+        this.props.authenticate();
+        history.push('/');
+    }, 500);
   }
 
   logout(history) {    
@@ -21,7 +23,7 @@ class Login extends Component {
         type="button"
         className="btn btn-primary"
         style={{marginRight: '20px'}}
-        onClick={() => { setTimeout(() => this.login(history), 500 )}}
+        onClick={() => {this.login(history)}}
       >
         Login
       </button>
